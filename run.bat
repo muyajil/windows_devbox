@@ -1,1 +1,0 @@
-docker run -v [PATH_TO_REPOSITORIES]:/repositories -idt -v c:/users/[User_Name]/.ssh:/ssh -p 6006:6006 --name linux_devbox dg_linux_devbox /bin/{bash, zsh} -c "cat /ssh/id_rsa >> /root/.ssh/id_rsa && chmod 700 /root/.ssh/id_rsa && /bin/{bash, zsh}"

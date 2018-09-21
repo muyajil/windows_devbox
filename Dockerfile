@@ -1,25 +1,20 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 LABEL maintainer='Mohammed Ajil <mohammed.ajil@digitecgalaxus.ch>'
 
+ENV DEBIAN_FRONTEND noninteractive
 
-ENV ZSH_THEME agnoster
-ENV NAME = '[NAME]'
-ENV EMAIL = '[EMAIL]'
-
-RUN apt-get update
-
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
+	apt-transport-https \
     build-essential \
     curl \
     libfreetype6-dev \
-    libpng12-dev \
+    libpng-dev \
     libzmq3-dev \
     pkg-config \
     python3 \
     python3-pip \
     python3-dev \
-    rsync \
     software-properties-common \
     unzip \
     git \
@@ -27,42 +22,83 @@ RUN apt-get install -y \
     nano \
     wget \
     locales \
-    tmux
+    nmap \
+    libcurl4-openssl-dev \
+    libssl-dev \
+    htop \
+    tzdata
 
+# Install oh my zsh
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+RUN sed -i 's/robbyrussell/agnoster/g' /root/.zshrc
+
+# Setup tzdata
+RUN ln -fs /usr/share/zoneinfo/Europe/Zurich /etc/localtime
+RUN dpkg-reconfigure --frontend noninteractive tzdata
+
+# Install python packages
 RUN pip3 install --upgrade pip
-
 RUN pip3 install \
-    tensorflow \
-    matplotlib \
-    numpy \
-    pandas \
-    sklearn \
-    google-cloud
+    virtualenv \
+    virtualenvwrapper \
+    jupyter \
+    jupyter_contrib_nbextensions \
+    jupyter_nbextensions_configurator
 
-RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+# Configure virtualenvwrapper and autoenv
+ENV WORKON_HOME /envs
+RUN echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.zshrc
+RUN echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.zshrc
+RUN git clone https://github.com/kennethreitz/autoenv.git ~/.autoenv
+RUN echo 'source ~/.autoenv/activate.sh' >> ~/.zshrc
 
-RUN export CLOUD_SDK_REPO="cloud-sdk-$(lsb_release -c -s)" && \
-    echo "deb http://packages.cloud.google.com/apt $CLOUD_SDK_REPO main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && \
-    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - && \
-    apt-get update && apt-get install -y google-cloud-sdk
+# Configure Jupyter
+RUN jupyter contrib nbextension install --system
+RUN jupyter nbextensions_configurator enable --system
+RUN jupyter nbextension enable hinterland/hinterland
+RUN jupyter nbextension enable codefolding/main
 
-RUN git config --global core.autocrlf true
-RUN git config --global user.email "${EMAIL}"
-RUN git config --global user.name "${NAME}"
+# Configure virtual environments for dg_ml_* projects
+RUN mkdir /envs
+RUN virtualenv --python /usr/bin/python3 /envs/jupyter
+RUN /envs/jupyter/bin/pip install --upgrade pip
+
+# Configure virtualenvironment for jupyter
+RUN /envs/jupyter/bin/pip install --upgrade pip ipykernel
+RUN /envs/jupyter/bin/ipython kernel install --name=jupyter
+
+# Configure Git
+RUN git config --global core.autocrlf input
 RUN git config --global push.default simple
 
-ENV SHELL /bin/zsh
+ENV SHELL /bin/bash
 
+# Configure locales
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
-ENV LANG en_US.UTF-8  
-ENV LANGUAGE en_US:en  
-ENV LC_ALL en_US.UTF-8  
-
-RUN sed -i 's/robbyrussell/${ZSH_THEME}/g' /root/.zshrc
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 RUN mkdir /root/.ssh
 
 EXPOSE 6006
+EXPOSE 8888
+EXPOSE 3000
+EXPOSE 8080
+EXPOSE 8081
+EXPOSE 8082
+EXPOSE 8083
+EXPOSE 8084
+EXPOSE 8085
+EXPOSE 8086
+
+ADD devbox-artifacts /usr/local/bin/
+
+RUN sed -i 's/\r$//g' /usr/local/bin/git-config.sh
+RUN chmod +x /usr/local/bin/git-config.sh
+
+RUN sed -i 's/\r$//g' /usr/local/bin/startup.sh
+RUN chmod +x /usr/local/bin/startup.sh
 
 WORKDIR /repositories
