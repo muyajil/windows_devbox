@@ -48,9 +48,12 @@ RUN pip3 install \
 # Configure virtualenvwrapper and autoenv
 ENV WORKON_HOME /envs
 RUN echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.zshrc
+RUN echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
 RUN echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.zshrc
+RUN echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
 RUN git clone https://github.com/kennethreitz/autoenv.git ~/.autoenv
 RUN echo 'source ~/.autoenv/activate.sh' >> ~/.zshrc
+RUN echo 'source ~/.autoenv/activate.sh' >> ~/.bashrc
 
 # Configure Jupyter
 RUN jupyter contrib nbextension install --system
@@ -72,6 +75,7 @@ RUN git config --global core.autocrlf input
 RUN git config --global push.default simple
 
 ENV SHELL /bin/bash
+RUN echo "source /usr/local/bin/bash-config.sh" >> /root/.bashrc
 
 # Configure locales
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
