@@ -39,7 +39,7 @@ $Help.Add("help", "Displays all available commands")
 function Devbox-Update() {
 
     param(
-        [String] $image_name = "anymodconrst001dg.azurecr.io/darwin.devbox"
+        [String] $image_name = "registry.gitlab.com/mohammed4/devbox"
     )
     
     Write-Host "Updating image $image_name"
