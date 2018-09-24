@@ -18,7 +18,6 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     unzip \
     git \
-    zsh \
     nano \
     wget \
     locales \
@@ -27,10 +26,6 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     htop \
     tzdata
-
-# Install oh my zsh
-RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-RUN sed -i 's/robbyrussell/agnoster/g' /root/.zshrc
 
 # Setup tzdata
 RUN ln -fs /usr/share/zoneinfo/Europe/Zurich /etc/localtime
@@ -47,12 +42,9 @@ RUN pip3 install \
 
 # Configure virtualenvwrapper and autoenv
 ENV WORKON_HOME /envs
-RUN echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.zshrc
 RUN echo "VIRTUALENVWRAPPER_PYTHON=/usr/bin/python3" >> ~/.bashrc
-RUN echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.zshrc
 RUN echo ". /usr/local/bin/virtualenvwrapper.sh" >> ~/.bashrc
 RUN git clone https://github.com/kennethreitz/autoenv.git ~/.autoenv
-RUN echo 'source ~/.autoenv/activate.sh' >> ~/.zshrc
 RUN echo 'source ~/.autoenv/activate.sh' >> ~/.bashrc
 
 # Configure Jupyter
@@ -61,7 +53,7 @@ RUN jupyter nbextensions_configurator enable --system
 RUN jupyter nbextension enable hinterland/hinterland
 RUN jupyter nbextension enable codefolding/main
 
-# Configure virtual environments for dg_ml_* projects
+# Configure virtual environments
 RUN mkdir /envs
 RUN virtualenv --python /usr/bin/python3 /envs/jupyter
 RUN /envs/jupyter/bin/pip install --upgrade pip
