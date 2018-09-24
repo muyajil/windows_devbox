@@ -101,4 +101,7 @@ RUN chmod +x /usr/local/bin/git-config.sh
 RUN sed -i 's/\r$//g' /usr/local/bin/startup.sh
 RUN chmod +x /usr/local/bin/startup.sh
 
+RUN sed -i 's/\r$//g' /usr/local/bin/bash-config.sh
+RUN chmod +x /usr/local/bin/bash-config.sh
+
 WORKDIR /repositories
